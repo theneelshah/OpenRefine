@@ -27,6 +27,8 @@
 
 package com.google.refine.expr.functions;
 
+import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
 
 import java.util.Properties;
@@ -35,15 +37,26 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import org.testng.annotations.Test;
 
 import com.google.refine.RefineTest;
+import com.google.refine.expr.EvalError;
+import com.google.refine.expr.util.CalendarParser;
+import com.google.refine.expr.util.CalendarParserException;
 
 public class CustomTests extends RefineTest {
 
     static Properties bindings = new Properties();
 
     @Test
-    public void testLength() throws JsonProcessingException {
-        String s = "kruthi";
+    public void testValidLeapDateConversion() throws CalendarParserException {
+        assertEquals(invoke("toDate", "02/29/2013"), CalendarParser.parseAsOffsetDateTime("2013-02-29"));
+    }
 
-        assertEquals(s, "kruthi");
+    @Test
+    public void testValidLeapYear() throws CalendarParserException {
+        assertEquals(invoke("toDate", "02/29/2012"), CalendarParser.parseAsOffsetDateTime("2012-02-29"));
+    }
+
+    @Test
+    void testEvalError() {
+        assertTrue(invoke("toDate", 5) instanceof EvalError);
     }
 }
