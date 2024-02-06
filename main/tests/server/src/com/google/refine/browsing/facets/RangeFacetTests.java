@@ -31,6 +31,7 @@ import java.io.IOException;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.google.refine.RefineTest;
@@ -81,6 +82,31 @@ public class RangeFacetTests extends RefineTest {
         RangeFacetConfig config = ParsingUtilities.mapper.readValue(configJson, RangeFacetConfig.class);
         TestUtils.isSerializedTo(config, configJson);
     }
+    //Newly added test case
+    @Test
+    public void testRangeFacetWithNonNumericValues() throws IOException {
+        Project project = createCSVProject("my column\n"
+                + "89.2\n"
+                + "-45.9\n"
+                + "blah\n"
+                + "0.4\n");
+        project.rows.get(0).cells.set(0, new Cell(89.2, null));
+        project.rows.get(1).cells.set(0, new Cell(-45.9, null));
+        project.rows.get(2).cells.set(0, new Cell("blah", null)); // Non-numeric value within the specified range
+        project.rows.get(3).cells.set(0, new Cell(0.4, null));
+
+        Engine engine = new Engine(project);
+        RangeFacetConfig config = ParsingUtilities.mapper.readValue(configJson, RangeFacetConfig.class);
+        RangeFacet facet = config.apply(project);
+        facet.computeChoices(project, engine.getAllFilteredRows());
+        
+        // Assert that the facet correctly handles non-numeric values within the specified range.
+        Assert.assertEquals(facet._baseNumericCount, 3, "Base numeric count should be 3.");
+        Assert.assertEquals(facet._baseNonNumericCount, 1, "Base non-numeric count should be 1.");
+        Assert.assertEquals(facet._baseErrorCount, 0, "Base error count should be 0.");
+    }
+
+   
 
     @Test
     public void serializeRangeFacet() throws JsonParseException, JsonMappingException, IOException {
