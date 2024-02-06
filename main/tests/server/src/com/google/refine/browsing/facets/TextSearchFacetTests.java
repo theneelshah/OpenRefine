@@ -100,6 +100,34 @@ public class TextSearchFacetTests extends RefineTest {
      * Test to demonstrate the intended behaviour of the function
      */
 
+    // Newly added test case
+    @Test
+    public void testTextFilterWithCaseSensitive() throws Exception {
+        // Apply text filter "A" with case sensitivity
+
+        // Column: "Value"
+        // Filter Query: "A"
+        // Mode: "text"
+        // Case sensitive: True
+        // Invert: False
+        String filter = "{\"type\":\"text\","
+                + "\"name\":\"Value\","
+                + "\"columnName\":\"Value\","
+                + "\"mode\":\"text\","
+                + "\"caseSensitive\":true,"
+                + "\"invert\":false,"
+                + "\"query\":\"A\"}";
+
+        configureFilter(filter);
+
+        // Check each row in the project against the filter
+        // Expect to retrieve one row containing "Abc" (case-sensitive match)
+        Assert.assertEquals(rowfilter.filterRow(project, 0, project.rows.get(0)), false);
+        Assert.assertEquals(rowfilter.filterRow(project, 1, project.rows.get(1)), false);
+        Assert.assertEquals(rowfilter.filterRow(project, 2, project.rows.get(2)), false);
+        Assert.assertEquals(rowfilter.filterRow(project, 3, project.rows.get(3)), true);
+    }
+
     @Test
     public void testTextFilter() throws Exception {
         // Apply text filter "a"
@@ -125,7 +153,6 @@ public class TextSearchFacetTests extends RefineTest {
         Assert.assertEquals(rowfilter.filterRow(project, 2, project.rows.get(2)), true);
         Assert.assertEquals(rowfilter.filterRow(project, 3, project.rows.get(3)), true);
     }
-
     @Test
     public void testInvertedTextFilter() throws Exception {
         // Apply inverted text filter "a"
