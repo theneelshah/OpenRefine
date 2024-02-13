@@ -54,5 +54,13 @@ public class FunctionalTests extends RefineTest {
         keyer = new NGramFingerprintKeyer();
         Assert.assertEquals(keyer.key("banana", 3), "anabannan");
     }
+    @Test
+    public void testIgnorePunctuation() {
+        Assert.assertEquals(keyer.key("Hello, How are you?!"), "are hello how you");
+    }
 
+    @Test
+    public void testSortAlphabetically() {
+        Assert.assertEquals(keyer.key("xyz abc pqr mno"), "abc mno pqr xyz");
+}
 }
