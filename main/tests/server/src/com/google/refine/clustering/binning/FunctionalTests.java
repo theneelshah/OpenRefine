@@ -37,13 +37,11 @@ public class FunctionalTests extends RefineTest {
     @Test
     public void testNonEnglishAlphabets() {
         Assert.assertEquals(keyer.key("Héllô Wôrld"), "hello world");
-        // System.out.println(keyer.key("Héllô Wôrld"));
     }
 
     @Test
     public void testConvertToLowerCase() {
         Assert.assertEquals(keyer.key("HELLO WORLD"), "hello world");
-        // System.out.println(keyer.key("HELLO WORLD"));
     }
 
 }
