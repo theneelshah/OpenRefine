@@ -44,4 +44,15 @@ public class FunctionalTests extends RefineTest {
         Assert.assertEquals(keyer.key("HELLO WORLD"), "hello world");
     }
 
+    @Test
+    public void testFixWhiteSpaces() {
+        Assert.assertEquals(keyer.key("He        llo"), "he llo");
+    }
+
+    @Test
+    public void testNGramTest() {
+        keyer = new NGramFingerprintKeyer();
+        Assert.assertEquals(keyer.key("banana", 3), "anabannan");
+    }
+
 }
