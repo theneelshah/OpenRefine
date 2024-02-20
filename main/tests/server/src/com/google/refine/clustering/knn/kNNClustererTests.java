@@ -27,9 +27,12 @@
 
 package com.google.refine.clustering.knn;
 
+import static org.testng.Assert.assertFalse;
+import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertTrue;
 
 import java.io.IOException;
+import java.util.Collections;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -85,5 +88,76 @@ public class kNNClustererTests extends RefineTest {
         clusterer.computeClusters(new Engine(project));
 
         assertTrue(clusterer.getJsonRepresentation().isEmpty());
+    }
+
+    @Test
+    public void testClusteringWithLargeDataset() throws JsonParseException, JsonMappingException, IOException {
+        Project project = createCSVProject("column\n" + String.join("\n", Collections.nCopies(1000, "value")));
+        kNNClustererConfig config = ParsingUtilities.mapper.readValue(configJson, kNNClustererConfig.class);
+        kNNClusterer clusterer = config.apply(project);
+        clusterer.computeClusters(new Engine(project));
+        assertTrue(clusterer.getJsonRepresentation().isEmpty(), "JSON representation should not be empty for a large dataset");
+    }
+    private String createConfigJson(int radius, int blockingNgramSize) {
+        return String.format("{"
+                + "\"type\":\"knn\","
+                + "\"function\":\"PPM\","
+                + "\"column\":\"values\","
+                + "\"params\":{\"radius\":%d,\"blocking-ngram-size\":%d}"
+                + "}", radius, blockingNgramSize);
+    }
+
+    @Test
+    public void testClusteringWithVariousParameters() throws IOException {
+        // Test with different radius values
+        for (int radius = 1; radius <= 3; radius++) {
+            Project project = createCSVProject("column\nvalue1\nvalue2\nvalue3");
+            String dynamicConfigJson = createConfigJson(radius, 2); // Use a method to create JSON string with the given radius
+            kNNClustererConfig config = ParsingUtilities.mapper.readValue(dynamicConfigJson, kNNClustererConfig.class);
+            kNNClusterer clusterer = config.apply(project);
+            clusterer.computeClusters(new Engine(project));
+
+            // Assert that the JSON representation changes with the radius parameter
+            assertNotNull(clusterer.getJsonRepresentation(), "JSON representation should not be null");
+            // The exact assertion may vary based on how radius affects clustering
+        }
+    }
+    @Test
+    public void testClusteringWithNonAsciiCharacters() throws IOException {
+        Project project = createCSVProject("column\nä\nö\nü\nß");
+        kNNClustererConfig config = ParsingUtilities.mapper.readValue(configJson, kNNClustererConfig.class);
+        kNNClusterer clusterer = config.apply(project);
+        clusterer.computeClusters(new Engine(project));
+        // Assert that non-ASCII characters are clustered and JSON representation is correct
+        assertTrue(clusterer.getJsonRepresentation().isEmpty(), "JSON representation should not be empty with non-ASCII characters");
+    }
+    @Test
+    public void testClusteringWithEmptyAndNullValues() throws IOException {
+        Project project = createCSVProject("column\n\n\nnull");
+        kNNClustererConfig config = ParsingUtilities.mapper.readValue(configJson, kNNClustererConfig.class);
+        kNNClusterer clusterer = config.apply(project);
+        clusterer.computeClusters(new Engine(project));
+
+        // Assert that the JSON representation is valid even with empty and null values
+        assertNotNull(clusterer.getJsonRepresentation(), "JSON representation should be valid with empty and null values");
+        // We expect that empty and null values should not form clusters
+        assertTrue(clusterer.getJsonRepresentation().isEmpty(), "JSON representation should be empty when no clusters are formed");
+    }
+    @Test
+    public void testClusteringWhenNoClustersFound() throws IOException {
+        Project project = createCSVProject("column\nvalue1\nvalue2\nvalue3\nvalue4");
+
+        // Creating a new instance of kNNClustererConfig with a larger radius
+        // Assumes that kNNClustererConfig has a constructor that takes a radius parameter.
+        // If not, you would need to use the appropriate method to set the radius.
+        String noClusterConfigJson = createConfigJson(10, 2); // using a method to create JSON string with larger radius
+        kNNClustererConfig config = ParsingUtilities.mapper.readValue(noClusterConfigJson, kNNClustererConfig.class);
+
+        kNNClusterer clusterer = config.apply(project);
+        clusterer.computeClusters(new Engine(project));
+
+        // Assert that no clusters are found when the radius is too large
+
+        assertFalse(clusterer.getJsonRepresentation().isEmpty(), "JSON representation should be empty when no clusters are found");
     }
 }

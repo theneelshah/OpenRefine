@@ -265,26 +265,56 @@ public class RangeFacet implements Facet {
         return null;
     }
 
-    public void initializeFromConfig(RangeFacetConfig config, Project project) {
-        _config = config;
+//    public void initializeFromConfig(RangeFacetConfig config, Project project) {
+//        _config = config;
+//
+//        if (_config._columnName.length() > 0) {
+//            Column column = project.columnModel.getColumnByName(_config._columnName);
+//            if (column != null) {
+//                _cellIndex = column.getCellIndex();
+//            } else {
+//                _errorMessage = "No column named " + _config._columnName;
+//            }
+//        } else {
+//            _cellIndex = -1;
+//        }
+//
+//        try {
+//            _eval = MetaParser.parse(_config._expression);
+//        } catch (ParsingException e) {
+//            _errorMessage = e.getMessage();
+//        }
+//    }
+public void initializeFromConfig(RangeFacetConfig config, Project project) {
+    _config = config;
 
-        if (_config._columnName.length() > 0) {
-            Column column = project.columnModel.getColumnByName(_config._columnName);
-            if (column != null) {
-                _cellIndex = column.getCellIndex();
-            } else {
-                _errorMessage = "No column named " + _config._columnName;
-            }
-        } else {
-            _cellIndex = -1;
-        }
-
-        try {
-            _eval = MetaParser.parse(_config._expression);
-        } catch (ParsingException e) {
-            _errorMessage = e.getMessage();
-        }
+    // Example of refined error handling
+    if (_config._columnName == null || _config._columnName.isEmpty()) {
+        _errorMessage = "Column name cannot be empty.";
+        return;
     }
+
+    Column column = project.columnModel.getColumnByName(_config._columnName);
+    if (column != null) {
+        _cellIndex = column.getCellIndex();
+    } else {
+        _errorMessage = "No column named " + _config._columnName;
+        return;
+    }
+
+    try {
+        _eval = MetaParser.parse(_config._expression);
+    } catch (ParsingException e) {
+        _errorMessage = "Parsing error: " + e.getMessage();
+    }
+
+    // Additional checks could be added here to refine how configuration is applied
+    // For example, validating the _from and _to range more explicitly
+    if (_config._from >= _config._to) {
+        _errorMessage = "'From' value must be less than 'To' value.";
+    }
+}
+
 
     @Override
     public RowFilter getRowFilter(Project project) {
