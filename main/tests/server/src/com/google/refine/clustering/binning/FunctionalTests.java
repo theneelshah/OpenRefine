@@ -61,6 +61,6 @@ public class FunctionalTests extends RefineTest {
 
     @Test
     public void testSortAlphabetically() {
-        Assert.assertEquals(keyer.key("xyz abc pqr mno"), "abc mno pqr xyz");
+        Assert.assertEquals(keyer.key("xyz abc pqr"), "abc pqr xyz");
 }
 }
