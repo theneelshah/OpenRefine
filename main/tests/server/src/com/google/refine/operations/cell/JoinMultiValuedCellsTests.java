@@ -35,10 +35,18 @@ package com.google.refine.operations.cell;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Properties;
 
+import org.mockito.Mock;
 import org.slf4j.LoggerFactory;
 import org.testng.Assert;
 import org.testng.annotations.BeforeMethod;
@@ -164,5 +172,26 @@ public class JoinMultiValuedCellsTests extends RefineTest {
         HistoryEntry historyEntry = operation.createHistoryEntry(1L);
 
         assertNotNull(historyEntry);
+    }
+
+    @Test
+    public void mockito() throws Exception {
+        Project project = new Project();
+        Project projectSpy = spy(project);
+        ColumnModel realColumnModel = new ColumnModel();
+        ColumnModel columnModelSpy = spy(realColumnModel);
+
+        when(columnModelSpy.getColumnByName("Value")).thenReturn(new Column(
+                0, "Value"));
+        when(columnModelSpy.getColumnByName("Key")).thenReturn(new Column(
+                1, "Key"));
+
+        projectSpy.columnModel = columnModelSpy;
+
+        MultiValuedCellJoinOperation operation = new MultiValuedCellJoinOperation(
+                "Value", "Key", ",", projectSpy);
+        HistoryEntry historyEntry = operation.createHistoryEntry(1L);
+
+        assertEquals(true, historyEntry != null);
     }
 }
