@@ -66,7 +66,7 @@ public class Project {
 
     final public long id;
     final public List<Row> rows = new ArrayList<>();
-    final public ColumnModel columnModel = new ColumnModel();
+    public ColumnModel columnModel = new ColumnModel();
     final public RecordModel recordModel = new RecordModel();
     final public Map<String, OverlayModel> overlayModels = new HashMap<String, OverlayModel>();
     final public History history;
@@ -91,7 +91,7 @@ public class Project {
      * Create a new project with the given ID. For testing ONLY.
      *
      * @param id
-     *            long ID to be assigned the new project
+     *           long ID to be assigned the new project
      */
     protected Project(long id) {
         this.id = id;
@@ -253,7 +253,8 @@ public class Project {
         project.columnModel.setMaxCellIndex(maxCellCount - 1);
 
         logger.info(
-                "Loaded project {} from disk in {} sec(s)", id, Long.toString((System.currentTimeMillis() - start) / 1000));
+                "Loaded project {} from disk in {} sec(s)", id,
+                Long.toString((System.currentTimeMillis() - start) / 1000));
 
         project.update();
 
@@ -263,14 +264,16 @@ public class Project {
     public void update() {
         columnModel.update();
         recordModel.update(this);
-        // Old projects may have a row count of 0, but we don't want the act of filling this in to change modified time.
+        // Old projects may have a row count of 0, but we don't want the act of filling
+        // this in to change modified time.
         if (getMetadata() != null) {
             getMetadata().setRowCountInternal(rows.size());
         }
     }
 
     // wrapper of processManager variable to allow unit testing
-    // TODO make the processManager variable private, and force all calls through this method
+    // TODO make the processManager variable private, and force all calls through
+    // this method
     public ProcessManager getProcessManager() {
         return this.processManager;
     }
