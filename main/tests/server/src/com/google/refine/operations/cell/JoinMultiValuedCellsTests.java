@@ -47,8 +47,6 @@ import com.google.refine.model.AbstractOperation;
 import com.google.refine.model.Project;
 import com.google.refine.operations.OperationRegistry;
 import com.google.refine.process.Process;
-import com.google.refine.util.ParsingUtilities;
-import com.google.refine.util.TestUtils;
 
 public class JoinMultiValuedCellsTests extends RefineTest {
 
@@ -62,7 +60,8 @@ public class JoinMultiValuedCellsTests extends RefineTest {
 
     @BeforeSuite
     public void registerOperation() {
-        OperationRegistry.registerOperation(getCoreModule(), "multivalued-cell-join", MultiValuedCellJoinOperation.class);
+        OperationRegistry.registerOperation(getCoreModule(), "multivalued-cell-join",
+                MultiValuedCellJoinOperation.class);
     }
 
     @BeforeMethod
@@ -73,16 +72,6 @@ public class JoinMultiValuedCellsTests extends RefineTest {
                         + ",two\n"
                         + ",three\n"
                         + ",four\n");
-    }
-
-    @Test
-    public void serializeMultiValuedCellJoinOperation() throws Exception {
-        String json = "{\"op\":\"core/multivalued-cell-join\","
-                + "\"description\":\"Join multi-valued cells in column value column\","
-                + "\"columnName\":\"value column\","
-                + "\"keyColumnName\":\"key column\","
-                + "\"separator\":\",\"}";
-        TestUtils.isSerializedTo(ParsingUtilities.mapper.readValue(json, MultiValuedCellJoinOperation.class), json);
     }
 
     /*
