@@ -33,6 +33,10 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 package com.google.refine.operations.cell;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+
+import java.util.List;
 import java.util.Properties;
 
 import org.slf4j.LoggerFactory;
@@ -43,7 +47,11 @@ import org.testng.annotations.BeforeTest;
 import org.testng.annotations.Test;
 
 import com.google.refine.RefineTest;
+import com.google.refine.model.Row;
+import com.google.refine.history.HistoryEntry;
 import com.google.refine.model.AbstractOperation;
+import com.google.refine.model.Column;
+import com.google.refine.model.ColumnModel;
 import com.google.refine.model.Project;
 import com.google.refine.operations.OperationRegistry;
 import com.google.refine.process.Process;
@@ -110,4 +118,51 @@ public class JoinMultiValuedCellsTests extends RefineTest {
         Assert.assertEquals(project.rows.get(0).getCellValue(valueCol), "one,     ,two,     ,three,     ,four");
     }
 
+    @Test
+    public void testConstructorOverload() {
+        MultiValuedCellJoinOperation operation = new MultiValuedCellJoinOperation("Value", "Key", ",", null);
+
+        assertNotNull(operation);
+    }
+
+    @Test
+    public void testProjectField() {
+        // Setup
+        Project project = new Project();
+        MultiValuedCellJoinOperation operation = new MultiValuedCellJoinOperation("Value", "Key", ",", project);
+
+        // Exercise
+        Project storedProject = operation.getProject();
+
+        // Verify
+        assertEquals(storedProject, project);
+    }
+
+    @Test
+    public void testExtractedMethod() {
+
+        MultiValuedCellJoinOperation operation = new MultiValuedCellJoinOperation("Value", "Key", ",", null);
+        Project project = new Project();
+
+        List<Row> newRows = operation.generateNewRows(project, 0, 1);
+
+        assertEquals(newRows.size(), 0); // Assuming the logic would not add any rows without valid data
+    }
+
+    @Test
+    public void testCreateHistoryEntry() throws Exception {
+        Project project = new Project();
+        ColumnModel columnModel = project.columnModel;
+        Column valueColumn = new Column(0, "Value");
+        Column keyColumn = new Column(1, "Key");
+
+        columnModel.addColumn(0, valueColumn, true);
+        columnModel.addColumn(1, keyColumn, true);
+
+        MultiValuedCellJoinOperation operation = new MultiValuedCellJoinOperation("Value", "Key", ",", project);
+
+        HistoryEntry historyEntry = operation.createHistoryEntry(1L);
+
+        assertNotNull(historyEntry);
+    }
 }
